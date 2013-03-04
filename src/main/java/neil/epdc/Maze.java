@@ -4,6 +4,9 @@ public class Maze {
 
   public static void main(String[] args) throws Exception {
     
+    long start = System.currentTimeMillis();
+    long moves = 0;
+    
     Client client = new Client();
     CurrentCell cell = client.newMaze();
     String guid = cell.getMazeGuid();
@@ -16,10 +19,15 @@ public class Maze {
       System.out.println(cell);
       facing = getDirection(cell, facing);
       cell = client.move(guid, facing);
+      moves++;
     }
     
     System.out.println(cell);
-    System.out.println("Finished");
+    
+    long end = System.currentTimeMillis();
+    long elapsed = (end-start)/1000;
+    System.out.println("Finished in " + moves + " moves and took " + elapsed + " seconds");
+    
   }
 
   /**
