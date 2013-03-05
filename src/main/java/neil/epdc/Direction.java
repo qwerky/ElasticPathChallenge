@@ -36,4 +36,19 @@ public enum Direction {
         throw new IllegalStateException("Impossible direction: " + this);
     }
   }
+  
+  public Direction aboutTurn() {
+    switch (this) {
+      case NORTH:
+        return SOUTH;
+      case EAST:
+        return WEST;
+      case SOUTH:
+        return NORTH;
+      case WEST:
+        return EAST;
+      default:
+        throw new IllegalStateException("Impossible direction: " + this);
+    }
+  }
 }

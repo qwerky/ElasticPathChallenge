@@ -55,13 +55,14 @@ public class Client {
    * @throws IOException
    */
   public CurrentCell backtrack(String guid, int x, int y) throws IOException {
+    
     List<NameValuePair> params = new ArrayList<NameValuePair>();
     params.add(new BasicNameValuePair("mazeGuid", guid));
     params.add(new BasicNameValuePair("x", String.valueOf(x)));
     params.add(new BasicNameValuePair("y", String.valueOf(y)));
     UrlEncodedFormEntity entity = new UrlEncodedFormEntity(params, "UTF-8");
     
-    HttpPost post = new HttpPost(host + "move");
+    HttpPost post = new HttpPost(host + "jump");
     post.setEntity(entity);
     
     return client.execute(post, handler);

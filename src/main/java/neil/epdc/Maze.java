@@ -1,7 +1,12 @@
 package neil.epdc;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 public class Maze {
 
+  private static Deque<Decision> decisions = new ArrayDeque<Decision>();
+  
   public static void main(String[] args) throws Exception {
     
     long start = System.currentTimeMillis();
@@ -10,15 +15,25 @@ public class Maze {
     Client client = new Client();
     CurrentCell cell = client.newMaze();
     String guid = cell.getMazeGuid();
+    System.out.println("Starting new maze " + guid);
     
-    //We always seem to start at 0,0 with an opening to the east
     Direction facing = Direction.EAST;
+    facing = getDirection(cell, facing);
     assertStart(cell);
     
     while (!cell.isAtEnd()) {
-      System.out.println(cell);
-      facing = getDirection(cell, facing);
-      cell = client.move(guid, facing);
+      System.out.print(cell);
+      if (isDeadEnd(cell, facing)) {
+        Decision decision = decisions.pop();
+        System.out.println("Dead end, backtracking to " + decision);
+        cell = client.backtrack(guid, decision.getX(), decision.getY());
+        facing = decision.getLastDirectionTaken().aboutTurn();
+      } else {
+        facing = getDirection(cell, facing);
+        checkForDecisions(cell, facing);
+        System.out.println("Moving " + facing);
+        cell = client.move(guid, facing);
+      }
       moves++;
     }
     
@@ -28,6 +43,29 @@ public class Maze {
     long elapsed = (end-start)/1000;
     System.out.println("Finished in " + moves + " moves and took " + elapsed + " seconds");
     
+  }
+
+  /**
+   * Returns true if we are currently looking at a dead end.
+   * @param cell
+   * @param facing
+   * @return
+   */
+  private static boolean isDeadEnd(CurrentCell cell, Direction facing) {
+    return cell.countExits() == 1 && !cell.isDirectionAvailable(facing);
+  }
+
+  /**
+   * Examines the current cell. If it is a junction and
+   * a decision needs to be made then it adds a decision
+   * to the stack.
+   * @param cell
+   * @param facing
+   */
+  private static void checkForDecisions(CurrentCell cell, Direction facing) {
+    if (cell.countExits() > 2) {
+      decisions.push(new Decision(cell.getX(), cell.getY(), facing));
+    }
   }
 
   /**
@@ -50,10 +88,6 @@ public class Maze {
     assert cell != null;
     assert cell.getX() == 0;
     assert cell.getY() == 0;
-    assert cell.getNorth() == Path.BLOCKED;
-    assert cell.getSouth() == Path.BLOCKED;
-    assert cell.getEast() == Path.UNEXPLORED;
-    assert cell.getWest() == Path.BLOCKED;
   }
 
 }

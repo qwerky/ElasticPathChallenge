@@ -52,6 +52,23 @@ public class CurrentCell {
     }
   }
   
+  public int countExits() {
+    int exitCount = 0;
+    if (isDirectionAvailable(Direction.NORTH)) {
+      exitCount++;
+    }
+    if (isDirectionAvailable(Direction.SOUTH)) {
+      exitCount++;
+    }
+    if (isDirectionAvailable(Direction.EAST)) {
+      exitCount++;
+    }
+    if (isDirectionAvailable(Direction.WEST)) {
+      exitCount++;
+    }
+    return exitCount;
+  }
+  
   public String getMazeGuid() {
     return mazeGuid;
   }
