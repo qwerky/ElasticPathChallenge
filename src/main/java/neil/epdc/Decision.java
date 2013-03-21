@@ -2,44 +2,33 @@ package neil.epdc;
 
 public class Decision {
 
-  private int x;
-  private int y;
   private Direction lastDirectionTaken;
+  private CurrentCell cell;
   
-  public Decision(int x, int y, Direction lastDirectionTaken) {
-    this.x = x;
-    this.y = y;
+  public Decision(Direction lastDirectionTaken, CurrentCell cell) {
     this.lastDirectionTaken = lastDirectionTaken;
+    this.cell = cell;
   }
 
   @Override
   public String toString() {
-    return "(" + x + "," + y + ") " + lastDirectionTaken;
+    return "(" + cell.getX() + "," + cell.getY() + ") " + lastDirectionTaken;
   }
   
   public int getX() {
-    return x;
+    return cell.getX();
   }
-  
-  public void setX(int x) {
-    this.x = x;
-  }
-  
+    
   public int getY() {
-    return y;
-  }
-  
-  public void setY(int y) {
-    this.y = y;
+    return cell.getY();
   }
   
   public Direction getLastDirectionTaken() {
     return lastDirectionTaken;
   }
-  
-  public void setLastDirectionTaken(Direction lastDirectionTaken) {
-    this.lastDirectionTaken = lastDirectionTaken;
+
+  public boolean hasUnexploredPaths() {
+    return cell.hasUnexploredPaths();
   }
-  
   
 }

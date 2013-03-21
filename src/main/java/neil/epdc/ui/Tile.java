@@ -13,12 +13,13 @@ public class Tile extends JComponent {
 
   private int size = 8;
   private CurrentCell cell;
+  private Color fill;
 
   public Tile(CurrentCell cell) {
     this.cell = cell;
     setToolTipText(cell.toString());
+    fill = Color.GREEN;
   }
-  
   
   
   @Override
@@ -27,12 +28,11 @@ public class Tile extends JComponent {
   }
 
 
-
   @Override
   protected void paintComponent(Graphics g) {
     super.paintComponent(g);
     
-    g.setColor(Color.WHITE);
+    g.setColor(fill);
     g.fillRect(0, 0, size, size);
     
     g.setColor(Color.BLACK);    
@@ -49,6 +49,12 @@ public class Tile extends JComponent {
       g.drawLine(0, 0, 0, size);
     }
   }
+  
+  
+  public void setFillColor(Color color) {
+    this.fill = color;
+  }
+  
   
   public CurrentCell getCell() {
     return cell;

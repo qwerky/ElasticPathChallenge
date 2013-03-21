@@ -52,6 +52,23 @@ public class CurrentCell {
     }
   }
   
+  public void setExplored(Direction facing) {
+    switch (facing) {
+      case NORTH:
+        north = Path.VISITED;
+        break;
+      case SOUTH:
+        south = Path.VISITED;
+        break;
+      case EAST:
+        east = Path.VISITED;
+        break;
+      case WEST:
+        west = Path.VISITED;
+        break;
+    }
+  }
+  
   public int countExits() {
     int exitCount = 0;
     if (isDirectionAvailable(Direction.NORTH)) {
@@ -67,6 +84,14 @@ public class CurrentCell {
       exitCount++;
     }
     return exitCount;
+  }
+  
+
+  public boolean hasUnexploredPaths() {
+    return north == Path.UNEXPLORED ||
+           south == Path.UNEXPLORED ||
+           east == Path.UNEXPLORED ||
+           west == Path.UNEXPLORED;
   }
   
   public String getMazeGuid() {

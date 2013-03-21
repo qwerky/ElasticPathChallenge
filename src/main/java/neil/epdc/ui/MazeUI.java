@@ -1,5 +1,6 @@
 package neil.epdc.ui;
 
+import java.awt.Color;
 import java.io.IOException;
 
 import javax.swing.JFrame;
@@ -13,7 +14,8 @@ public class MazeUI {
 
   private Maze maze;
   
-  private Tile[][] tiles = new Tile[100][100];  
+  private boolean[][] tiles = new boolean[100][100];
+  private Tile prev;
   private JFrame frame;
   private SpringLayout layout = new SpringLayout();
   
@@ -55,16 +57,17 @@ public class MazeUI {
 
 
   private void addTile(CurrentCell cell) {
-    if (tiles[cell.getX()][cell.getY()] == null) {
+    if (!tiles[cell.getX()][cell.getY()]) {
+      if (prev != null) {
+        prev.setFillColor(Color.WHITE);
+      }
       Tile tile = new Tile(cell);
       layout.putConstraint(SpringLayout.NORTH, tile, cell.getY()*8, SpringLayout.NORTH, frame);
       layout.putConstraint(SpringLayout.WEST, tile, cell.getX()*8, SpringLayout.WEST, frame);
-      tiles[cell.getX()][cell.getY()] = tile;
       frame.getContentPane().add(tile);
       frame.validate();
       frame.repaint();
-    } else {
-      System.out.println("Cell not added, already drawn: " + cell);
+      prev = tile;
     }
   }
   

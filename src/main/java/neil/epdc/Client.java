@@ -2,7 +2,9 @@ package neil.epdc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -17,6 +19,8 @@ public class Client {
   private HttpClient client = new DefaultHttpClient();
   private JsonHandler handler = new JsonHandler();
   
+  private Set<CurrentCell> cells = new HashSet<CurrentCell>();
+  
   /**
    * Creates a new maze.
    * @return
@@ -24,7 +28,9 @@ public class Client {
    */
   public CurrentCell newMaze() throws IOException {
     HttpPost post = new HttpPost(host + "init");
-    return client.execute(post, handler);
+    CurrentCell cell = client.execute(post, handler);
+    addToCache(cell);
+    return cell;
   }
   
   /**
@@ -43,7 +49,9 @@ public class Client {
     HttpPost post = new HttpPost(host + "move");
     post.setEntity(entity);
     
-    return client.execute(post, handler);
+    CurrentCell cell = client.execute(post, handler);
+    addToCache(cell);
+    return cell;
   }
   
   /**
@@ -68,4 +76,10 @@ public class Client {
     return client.execute(post, handler);
   }
 
+  
+  private void addToCache(CurrentCell cell) {
+    if (!cells.add(cell)) {
+      System.out.println("Inefficiency - already visited cell " + cell);
+    }
+  }
 }

@@ -38,8 +38,11 @@ public class Maze {
 
   public void step() throws IOException {
     if (isDeadEnd(cell, facing)) {
-      Decision decision = decisions.pop();
-      System.out.println("Dead end, backtracking to " + decision);
+      Decision decision;
+      do {
+        decision = decisions.pop();
+        System.out.println("Dead end, backtracking to " + decision);
+      } while (!decision.hasUnexploredPaths());
       cell = client.backtrack(cell.getMazeGuid(), decision.getX(), decision.getY());
       facing = decision.getLastDirectionTaken().aboutTurn();
     } else {
@@ -50,7 +53,8 @@ public class Maze {
     }
     moves++;
   }
-  
+
+
   /**
    * Returns true if the maze is solved.
    * @return
@@ -101,7 +105,8 @@ public class Maze {
    */
   private void checkForDecisions(CurrentCell cell, Direction facing) {
     if (cell.countExits() > 2) {
-      decisions.push(new Decision(cell.getX(), cell.getY(), facing));
+      decisions.push(new Decision(facing, cell));
+      cell.setExplored(facing);
     }
   }
 
