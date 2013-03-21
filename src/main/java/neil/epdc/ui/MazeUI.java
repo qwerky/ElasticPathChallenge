@@ -1,35 +1,38 @@
 package neil.epdc.ui;
 
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
 
 import javax.swing.JFrame;
 import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 
-import neil.epdc.Client;
 import neil.epdc.CurrentCell;
-import neil.epdc.Decision;
-import neil.epdc.Direction;
+import neil.epdc.Maze;
 
 public class MazeUI {
 
-  private Tile[][] tiles = new Tile[100][100];
-  private Client client = new Client();
-  private String guid;
-  private Direction facing = Direction.EAST;
-  private Deque<Decision> decisions = new ArrayDeque<Decision>();
-  private CurrentCell cell;
+  private Maze maze;
   
+  private Tile[][] tiles = new Tile[100][100];  
   private JFrame frame;
   private SpringLayout layout = new SpringLayout();
   
-  private int moves = 0;
-  
+  /**
+   * Main method.
+   * @param args
+   * @throws IOException
+   */
   public static void main(String[] args) throws IOException {
     MazeUI ui = new MazeUI();
     ui.launch();
+  }
+  
+  /**
+   * Constructor.
+   * @throws IOException
+   */
+  public MazeUI() throws IOException {
+    maze = new Maze();
   }
   
   
@@ -40,40 +43,18 @@ public class MazeUI {
     frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     frame.setSize(600, 600);
     frame.getContentPane().setLayout(layout);
-    
-    cell = client.newMaze();
-    guid = cell.getMazeGuid();    
-    addTile(cell);
-    
-    facing = getDirection(cell, facing);
-    
     frame.setVisible(true);
     
-    while (!cell.isAtEnd()) {
-      try {
-        if (isDeadEnd(cell, facing)) {
-          Decision decision = decisions.pop();
-          System.out.println("Dead end, backtracking to " + decision);
-          cell = client.backtrack(guid, decision.getX(), decision.getY());
-          facing = decision.getLastDirectionTaken().aboutTurn();
-        } else {
-          facing = getDirection(cell, facing);
-          checkForDecisions(cell, facing);
-          System.out.println("Moving " + facing);
-          cell = client.move(guid, facing);
-          addTile(cell);
-        }
-        moves++;
-      } catch (IOException ioe) {
-        ioe.printStackTrace();
-      }
-    }
+    do {
+      addTile(maze.getCell());
+      maze.step();
+    } while (!maze.isSolved());
     
     finish();
   }
 
 
-  public void addTile(CurrentCell cell) {
+  private void addTile(CurrentCell cell) {
     if (tiles[cell.getX()][cell.getY()] == null) {
       Tile tile = new Tile(cell);
       layout.putConstraint(SpringLayout.NORTH, tile, cell.getY()*8, SpringLayout.NORTH, frame);
@@ -88,46 +69,9 @@ public class MazeUI {
   }
   
   private void finish() {
-    FinishDialog dialog = new FinishDialog(frame, cell, moves);
+    FinishDialog dialog = new FinishDialog(frame, maze.getCell(), maze.getMoves());
     dialog.setVisible(true);
     frame.dispose();
   }
-  
-  /**
-   * Returns true if we are currently looking at a dead end.
-   * @param cell
-   * @param facing
-   * @return
-   */
-  private boolean isDeadEnd(CurrentCell cell, Direction facing) {
-    return cell.countExits() == 1 && !cell.isDirectionAvailable(facing);
-  }
 
-  /**
-   * Examines the current cell. If it is a junction and
-   * a decision needs to be made then it adds a decision
-   * to the stack.
-   * @param cell
-   * @param facing
-   */
-  private void checkForDecisions(CurrentCell cell, Direction facing) {
-    if (cell.countExits() > 2) {
-      decisions.push(new Decision(cell.getX(), cell.getY(), facing));
-    }
-  }
-
-  /**
-   * Return the Direction to move, using a turn
-   * left first strategy.
-   * @param cell
-   * @param facing
-   * @return
-   */
-  private Direction getDirection(CurrentCell cell, Direction facing) {
-    facing = facing.left();
-    while (!cell.isDirectionAvailable(facing)) {
-      facing = facing.right();
-    }
-    return facing;
-  }
 }

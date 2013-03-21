@@ -1,57 +1,94 @@
 package neil.epdc;
 
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class Maze {
 
-  private static Deque<Decision> decisions = new ArrayDeque<Decision>();
+  private Deque<Decision> decisions = new ArrayDeque<Decision>();
+  private int moves = 0;
+  private Client client;
+  private CurrentCell cell;
+  private Direction facing;
   
   public static void main(String[] args) throws Exception {
     
     long start = System.currentTimeMillis();
-    long moves = 0;
+    Maze maze = new Maze();
     
-    Client client = new Client();
-    CurrentCell cell = client.newMaze();
-    String guid = cell.getMazeGuid();
-    System.out.println("Starting new maze " + guid);
-    
-    Direction facing = Direction.EAST;
-    facing = getDirection(cell, facing);
-    assertStart(cell);
-    
-    while (!cell.isAtEnd()) {
-      System.out.print(cell);
-      if (isDeadEnd(cell, facing)) {
-        Decision decision = decisions.pop();
-        System.out.println("Dead end, backtracking to " + decision);
-        cell = client.backtrack(guid, decision.getX(), decision.getY());
-        facing = decision.getLastDirectionTaken().aboutTurn();
-      } else {
-        facing = getDirection(cell, facing);
-        checkForDecisions(cell, facing);
-        System.out.println("Moving " + facing);
-        cell = client.move(guid, facing);
-      }
-      moves++;
+    while (!maze.isSolved()) {
+      maze.step();
     }
-    
-    System.out.println(cell);
     
     long end = System.currentTimeMillis();
     long elapsed = (end-start)/1000;
-    System.out.println("Finished in " + moves + " moves and took " + elapsed + " seconds");
-    
+    maze.printCell();
+    System.out.println("Finished in " + maze.getMoves() + " moves and took " + elapsed + " seconds");
+  }
+  
+  
+  public Maze() throws IOException {
+    client = new Client();
+    cell = client.newMaze();
+    facing = Direction.EAST;
+    facing = getDirection(cell, facing);
+    assertStart(cell);
   }
 
+  public void step() throws IOException {
+    if (isDeadEnd(cell, facing)) {
+      Decision decision = decisions.pop();
+      System.out.println("Dead end, backtracking to " + decision);
+      cell = client.backtrack(cell.getMazeGuid(), decision.getX(), decision.getY());
+      facing = decision.getLastDirectionTaken().aboutTurn();
+    } else {
+      facing = getDirection(cell, facing);
+      checkForDecisions(cell, facing);
+      System.out.println("Moving " + facing);
+      cell = client.move(cell.getMazeGuid(), facing);
+    }
+    moves++;
+  }
+  
+  /**
+   * Returns true if the maze is solved.
+   * @return
+   */
+  public boolean isSolved() {
+    return cell.isAtEnd();
+  }
+  
+  /**
+   * Returns the number of moves takes so far in the maze.
+   * @return
+   */
+  public int getMoves() {
+    return moves;
+  }
+  
+  /**
+   * Returns the current cell.
+   * @return
+   */
+  public CurrentCell getCell() {
+    return cell;
+  }
+  
+  /**
+   * Prints the details of the current cell to the console.
+   */
+  public void printCell() {
+    System.out.println(cell);
+  }
+  
   /**
    * Returns true if we are currently looking at a dead end.
    * @param cell
    * @param facing
    * @return
    */
-  private static boolean isDeadEnd(CurrentCell cell, Direction facing) {
+  private boolean isDeadEnd(CurrentCell cell, Direction facing) {
     return cell.countExits() == 1 && !cell.isDirectionAvailable(facing);
   }
 
@@ -62,7 +99,7 @@ public class Maze {
    * @param cell
    * @param facing
    */
-  private static void checkForDecisions(CurrentCell cell, Direction facing) {
+  private void checkForDecisions(CurrentCell cell, Direction facing) {
     if (cell.countExits() > 2) {
       decisions.push(new Decision(cell.getX(), cell.getY(), facing));
     }
@@ -75,7 +112,7 @@ public class Maze {
    * @param facing
    * @return
    */
-  private static Direction getDirection(CurrentCell cell, Direction facing) {
+  private Direction getDirection(CurrentCell cell, Direction facing) {
     facing = facing.left();
     while (!cell.isDirectionAvailable(facing)) {
       facing = facing.right();
@@ -84,7 +121,7 @@ public class Maze {
   }
   
 
-  private static void assertStart(CurrentCell cell) {
+  private void assertStart(CurrentCell cell) {
     assert cell != null;
     assert cell.getX() == 0;
     assert cell.getY() == 0;
