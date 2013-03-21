@@ -12,32 +12,25 @@ public class Maze {
   private CurrentCell cell;
   private Direction facing;
   
-  public static void main(String[] args) throws Exception {
-    
-    long start = System.currentTimeMillis();
-    Maze maze = new Maze();
-    
-    while (!maze.isSolved()) {
-      maze.step();
-    }
-    
-    long end = System.currentTimeMillis();
-    long elapsed = (end-start)/1000;
-    maze.printCell();
-    System.out.println("Finished in " + maze.getMoves() + " moves and took " + elapsed + " seconds");
-  }
-  
-  
+  /**
+   * Constructor.
+   * @throws IOException
+   */
   public Maze() throws IOException {
     client = new Client();
     cell = client.newMaze();
     facing = Direction.EAST;
-    facing = getDirection(cell, facing);
-    assertStart(cell);
+    facing = getDirection();
+    assertStart();
   }
 
+  
+  /**
+   * Takes the next step in solving the maze.
+   * @throws IOException
+   */
   public void step() throws IOException {
-    if (isDeadEnd(cell, facing)) {
+    if (isDeadEnd()) {
       Decision decision;
       do {
         decision = decisions.pop();
@@ -46,8 +39,8 @@ public class Maze {
       cell = client.backtrack(cell.getMazeGuid(), decision.getX(), decision.getY());
       facing = decision.getLastDirectionTaken().aboutTurn();
     } else {
-      facing = getDirection(cell, facing);
-      checkForDecisions(cell, facing);
+      facing = getDirection();
+      checkForDecisions();
       System.out.println("Moving " + facing);
       cell = client.move(cell.getMazeGuid(), facing);
     }
@@ -88,11 +81,9 @@ public class Maze {
   
   /**
    * Returns true if we are currently looking at a dead end.
-   * @param cell
-   * @param facing
    * @return
    */
-  private boolean isDeadEnd(CurrentCell cell, Direction facing) {
+  private boolean isDeadEnd() {
     return cell.countExits() == 1 && !cell.isDirectionAvailable(facing);
   }
 
@@ -100,10 +91,8 @@ public class Maze {
    * Examines the current cell. If it is a junction and
    * a decision needs to be made then it adds a decision
    * to the stack.
-   * @param cell
-   * @param facing
    */
-  private void checkForDecisions(CurrentCell cell, Direction facing) {
+  private void checkForDecisions() {
     if (cell.countExits() > 2) {
       decisions.push(new Decision(facing, cell));
       cell.setExplored(facing);
@@ -113,11 +102,9 @@ public class Maze {
   /**
    * Return the Direction to move, using a turn
    * left first strategy.
-   * @param cell
-   * @param facing
    * @return
    */
-  private Direction getDirection(CurrentCell cell, Direction facing) {
+  public Direction getDirection() {
     facing = facing.left();
     while (!cell.isDirectionAvailable(facing)) {
       facing = facing.right();
@@ -126,7 +113,7 @@ public class Maze {
   }
   
 
-  private void assertStart(CurrentCell cell) {
+  private void assertStart() {
     assert cell != null;
     assert cell.getX() == 0;
     assert cell.getY() == 0;
